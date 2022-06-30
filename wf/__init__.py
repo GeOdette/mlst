@@ -10,19 +10,22 @@ from latch.types import LatchFile, LatchDir
 
 
 @small_task
-def mlst_task(fasta_file: LatchFile, out_dir: LatchDir)-> LatchDir:
+def mlst_task(fasta_file: LatchFile, out_dir: LatchDir) -> LatchFile:
 
     # defining the subprocess
-    mlst_cmd=[
+    mlst_cmd = [
         "mlst",
-        str(fasta_file),
+        fasta_file.local_path,
+        ">",
+        "mlst.csv"
     ]
-    subprocess.run(mlst_cmd)
-    return file_glob(*.tsv, out_dir.remote_path)
+    subprocess.run(mlst_cmd, shell=True)
+
+    LatchFile(str(mlst.csv), f"{out_dir.remote_path}/mlst.csv")
 
 
 @workflow
-def mlst(fasta_file: LatchFile, out_dir:LatchDir) -> LatchDir:
+def mlst(fasta_file: LatchFile, out_dir: LatchDir) -> LatchFile:
     """Scan contig files against traditional PubMLST typing schemes
 
     _MLST_
@@ -54,9 +57,14 @@ def mlst(fasta_file: LatchFile, out_dir:LatchDir) -> LatchDir:
           Output directory
 
           __metadata__:
-            display_name: Output directory
+            display_name: OUtput directory
 
 
     """
 
     return mlst_task(fasta_file=fasta_file, out_dir=out_dir)
+
+
+# if __name__ == "__main__":
+# mlst(fasta_file=r'/home/sgodette/Downloads/example.fna.gz',
+# out_dir=r'/home/sgodette/Downloads/urls')
